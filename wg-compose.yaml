@@ -1,0 +1,86 @@
+version: "3.3"
+
+services:
+  wg-s1:
+    image: linuxserver/wireguard:latest
+    container_name: wg-s1
+    cap_add:
+      - NET_ADMIN
+      #- SYS_MODULE #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      #- SERVERURL=wireguard.domain.com #optional
+      - SERVERPORT=51820 #optional
+      - PEERS=1 #optional
+      - PEERDNS=auto #optional
+      - INTERNAL_SUBNET=10.16.19.0 #optional
+      - ALLOWEDIPS=0.0.0.0/0 #optional
+      #- ALLOWEDIPS=10.16.17.0/24 #optional
+      #- PERSISTENTKEEPALIVE_PEERS=1 #optional
+      - PERSISTENTKEEPALIVE_PEERS=all #optional
+      - LOG_CONFS=true #optional
+    volumes:
+      - ./config:/config
+      #- /lib/modules:/lib/modules #optional
+    #ports:
+    #  - 51820:51820/udp
+    #sysctls:
+      #- net.ipv4.ip_forward=1
+    #  - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+    networks:
+      wgn-secured:
+        ipv4_address: 172.24.19.2
+        aliases:
+          - wg-srv1
+
+  wg-c1:
+    image: linuxserver/wireguard:latest
+    depends_on:
+      - wg-s1
+    #network_mode: service:wireguard
+    container_name: wg-c1
+    cap_add:
+      - NET_ADMIN
+      #- SYS_MODULE #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Vienna
+      #- SERVERURL=wireguard.domain.com #optional
+      #- SERVERPORT=51820 #optional
+      #- PEERS=1 #optional
+      #- PEERDNS=auto #optional
+      #- INTERNAL_SUBNET=10.16.17.0 #optional
+      #- ALLOWEDIPS=0.0.0.0/0 #optional
+      #- ALLOWEDIPS=10.16.17.0/24 #optional
+      #- PERSISTENTKEEPALIVE_PEERS= #optional
+      #- LOG_CONFS=true #optional
+    volumes:
+      #- ./config:/config
+      - ./config/peer1:/config/wg_confs
+      #- ./config/peer1/peer1.conf:/config/wg_confs/peer1.conf
+      #- ./config/peer1:/config
+      #- ./config/peer1/peer1.conf:/config/wg_confs/wg0.conf
+      #- /lib/modules:/lib/modules #optional
+    #ports:
+    #  - 51820:51820/udp
+    sysctls:
+      #- net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=1
+      - net.ipv6.conf.default.disable_ipv6=1      
+    restart: unless-stopped
+    networks:
+      wgn-secured:
+        ipv4_address: 172.24.19.3
+        aliases:
+          - silk-wg-clt1
+
+networks:
+  wgn-secured:
+    ipam:
+      config:
+        - subnet: "172.24.19.0/24"
