@@ -14,15 +14,26 @@ maybe it helps someone else.
 
 ## compose
 
+edit [yaml](wg-compose.yaml) to fit your preferences.
+
+use `id <your user name>` to find values for `PUID` and `PGID`.
+
+```shell
+id <your user name>
+```
+
+at first run start just wireguard server, 
+to build configuration files stored in volumne `./config`.
+
 ```shell
 docker-compose -f wg-compose.yaml up -d wg-s1
 ```
 
-now folder config has been created
+now folder `config` has been created
 
 please edit [peer1.conf](./config/peer1/peer1.conf)
 
-in section `[Peer]` `Endpoint` to IP address of service `wg-s1`.
+in section `[Peer]` set `Endpoint` to IP address of service `wg-s1`.
 
 ![edit peer1.conf](./y_scr/peer1-edit.png)
 
@@ -30,7 +41,13 @@ in section `[Peer]` `Endpoint` to IP address of service `wg-s1`.
 
 to have matching compose yaml and documentation static
 IP addresses have been assigned to network `wgn-secured` and
-to services.
+to services, 
+let me know in case you have a better way.
+
+
+:bulp: 
+be aware changing environment variables (SERVERPORT, PEERS, PEERDNS, INTERNAL_SUBNET, ALLOWEDIPS) will trigger 
+rebuild of configuration files 
 
 ```shell
 docker-compose -f wg-compose.yaml up -d wg-c1
